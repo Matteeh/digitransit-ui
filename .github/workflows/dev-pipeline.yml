@@ -19,11 +19,21 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Cache node modules
+
+      # https://github.com/actions/cache/blob/8f1e2e02865c42348f9baddbbaafb1841dce610a/examples.md#node---yarn-2
+      - name: Cache node_modules
+        id: cache-node-modules
         uses: actions/cache@v2
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Cache .yarn/cache
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        uses: actions/cache@v3
+        with:
+          path: '.yarn/cache'
+          key: yarn-cache-${{ github.ref_name }}
+          restore-keys: yarn-cache-v2
       - name: Install dependencies
         run: yarn
   lint:
@@ -43,11 +53,21 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Cache node modules
+
+      # https://github.com/actions/cache/blob/8f1e2e02865c42348f9baddbbaafb1841dce610a/examples.md#node---yarn-2
+      - name: Cache node_modules
+        id: cache-node-modules
         uses: actions/cache@v2
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Cache .yarn/cache
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        uses: actions/cache@v3
+        with:
+          path: '.yarn/cache'
+          key: yarn-cache-${{ github.ref_name }}
+          restore-keys: yarn-cache-v2
       - name: Install dependencies and build shared components
         run: yarn setup
       - name: Run linters
@@ -69,11 +89,21 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Cache node modules
+
+      # https://github.com/actions/cache/blob/8f1e2e02865c42348f9baddbbaafb1841dce610a/examples.md#node---yarn-2
+      - name: Cache node_modules
+        id: cache-node-modules
         uses: actions/cache@v2
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Cache .yarn/cache
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        uses: actions/cache@v3
+        with:
+          path: '.yarn/cache'
+          key: yarn-cache-${{ github.ref_name }}
+          restore-keys: yarn-cache-v2
       - name: Install dependencies and build shared components
         run: yarn setup
       - name: build relay queries
@@ -99,17 +129,25 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Cache node modules
+
+      # https://github.com/actions/cache/blob/8f1e2e02865c42348f9baddbbaafb1841dce610a/examples.md#node---yarn-2
+      - name: Cache node_modules
+        id: cache-node-modules
         uses: actions/cache@v2
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Cache .yarn/cache
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        uses: actions/cache@v3
+        with:
+          path: '.yarn/cache'
+          key: yarn-cache-${{ github.ref_name }}
+          restore-keys: yarn-cache-v2
       - name: Install dependencies and build shared components
         run: yarn setup
       - name: build relay queries
         run: yarn relay
-      - name: Build UI
-        run: yarn build
       - name: Run accessibility tests
         run: yarn test-accessibility
   # build:
@@ -129,18 +167,28 @@ jobs:
   #       uses: actions/setup-node@v1
   #       with:
   #         node-version: ${{ matrix.node-version }}
-  #     - name: Cache node modules
+
+  #     # https://github.com/actions/cache/blob/8f1e2e02865c42348f9baddbbaafb1841dce610a/examples.md#node---yarn-2
+  #     - name: Cache node_modules
+  #       id: cache-node-modules
   #       uses: actions/cache@v2
   #       with:
   #         path: '**/node_modules'
   #         key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+  #     - name: Cache .yarn/cache
+  #       if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: '.yarn/cache'
+  #         key: yarn-cache-${{ github.ref_name }}
+  #         restore-keys: yarn-cache-v2
   #     - name: Build shared components
   #       run: yarn setup
   #     - name: Build UI
   #       run: yarn build
   #     - name: Cache build
   #       id: cache-build
-  #       uses: actions/cache@v2
+  #       uses: actions/cache@v3
   #       with:
   #         path: |
   #           '**/_static'
@@ -166,11 +214,21 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Cache node modules
+
+      # https://github.com/actions/cache/blob/8f1e2e02865c42348f9baddbbaafb1841dce610a/examples.md#node---yarn-2
+      - name: Cache node_modules
+        id: cache-node-modules
         uses: actions/cache@v2
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Cache .yarn/cache
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        uses: actions/cache@v3
+        with:
+          path: '.yarn/cache'
+          key: yarn-cache-${{ github.ref_name }}
+          restore-keys: yarn-cache-v2
       - name: Build shared components
         run: yarn setup
       - name: Build relay queries
@@ -206,11 +264,21 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Cache node modules
+
+      # https://github.com/actions/cache/blob/8f1e2e02865c42348f9baddbbaafb1841dce610a/examples.md#node---yarn-2
+      - name: Cache node_modules
+        id: cache-node-modules
         uses: actions/cache@v2
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Cache .yarn/cache
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        uses: actions/cache@v3
+        with:
+          path: '.yarn/cache'
+          key: yarn-cache-${{ github.ref_name }}
+          restore-keys: yarn-cache-v2
       - name: Install dependencies and build shared components
         run: yarn setup
       - name: Build relay queries
@@ -249,11 +317,21 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Cache node modules
+
+      # https://github.com/actions/cache/blob/8f1e2e02865c42348f9baddbbaafb1841dce610a/examples.md#node---yarn-2
+      - name: Cache node_modules
+        id: cache-node-modules
         uses: actions/cache@v2
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Cache .yarn/cache
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        uses: actions/cache@v3
+        with:
+          path: '.yarn/cache'
+          key: yarn-cache-${{ github.ref_name }}
+          restore-keys: yarn-cache-v2
       - name: Install dependencies and build shared components
         run: yarn setup
       - name: build relay queries
