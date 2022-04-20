@@ -3,6 +3,10 @@ FROM node:10 as node-modules
 
 WORKDIR /opt/digitransit-ui
 
+ENV \
+  # We mimick common CI/CD systems so that tools don't assume a "normal" dev env.
+  CI=true
+
 COPY .yarnrc.yml package.json yarn.lock lerna.json ./
 COPY .yarn ./.yarn
 
@@ -15,7 +19,7 @@ COPY digitransit-component ./digitransit-component
 COPY digitransit-store ./digitransit-store
 
 RUN \
-  && yarn install --immutable \
+  && yarn install --immutable --inline-builds \
   && rm -rf /tmp/phantomjs
 
 # We create another image layer *without* the dir here, in order to copy the Yarn setup without the cache later.
