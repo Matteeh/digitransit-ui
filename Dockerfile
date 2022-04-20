@@ -1,4 +1,26 @@
 # syntax = docker/dockerfile:1.4
+FROM node:10 as node-modules
+
+WORKDIR /opt/digitransit-ui
+
+COPY .yarnrc.yml package.json yarn.lock lerna.json ./
+COPY .yarn ./.yarn
+
+# todo: only copy */packages/*/package.json, not all of the code
+# AFAIK there is no blob syntax that copies */package.json while keeping paths.
+# https://github.com/moby/moby/issues/15858
+COPY digitransit-util ./digitransit-util
+COPY digitransit-search-util ./digitransit-search-util
+COPY digitransit-component ./digitransit-component
+COPY digitransit-store ./digitransit-store
+
+RUN \
+  yarn \
+  && rm -rf /tmp/phantomjs
+
+# We create another image layer *without* the dir here, in order to copy the Yarn setup without the cache later.
+RUN rm -r .yarn/cache
+
 FROM node:10
 MAINTAINER Reittiopas version: 0.1
 
@@ -6,11 +28,19 @@ WORKDIR /opt/digitransit-ui
 
 EXPOSE 8080
 
+COPY .yarnrc.yml package.json yarn.lock lerna.json ./
+COPY config ./config
+COPY --from=node-modules /opt/digitransit-ui/.yarn ./.yarn
+
+COPY --from=node-modules /opt/digitransit-ui/node_modules ./node_modules
+
+COPY digitransit-util ./digitransit-util
+COPY digitransit-search-util ./digitransit-search-util
+COPY digitransit-component ./digitransit-component
+COPY digitransit-store ./digitransit-store
+RUN yarn build-workspaces
+
 ENV \
-  # Where the app is built and run inside the docker fs \
-  WORK=/opt/digitransit-ui \
-  # Used indirectly for saving npm logs etc. \
-  HOME=/opt/digitransit-ui \
   # App specific settings to override when the image is run \
   SENTRY_DSN='' \
   SENTRY_SECRET_DSN='' \
@@ -34,12 +64,9 @@ ENV \
   ASSET_URL='' \
   STATIC_MESSAGE_URL=''
 
-WORKDIR ${WORK}
 ADD . ${WORK}
 
 RUN \
-  yarn && \
-  yarn setup && \
   yarn build && \
   rm -rf static docs test /tmp/* .cache && \
   yarn cache clean --all
