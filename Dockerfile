@@ -75,7 +75,6 @@ ADD . ${WORK}
 
 RUN \
   yarn build && \
-  rm -rf static docs test /tmp/* .cache && \
-  yarn cache clean --all
+  rm -rf /tmp/Relay* node_modules/.cache
 
 CMD yarn run start
