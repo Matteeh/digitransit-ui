@@ -15,7 +15,7 @@ COPY digitransit-component ./digitransit-component
 COPY digitransit-store ./digitransit-store
 
 RUN \
-  yarn \
+  && yarn install --immutable \
   && rm -rf /tmp/phantomjs
 
 # We create another image layer *without* the dir here, in order to copy the Yarn setup without the cache later.
