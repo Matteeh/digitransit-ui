@@ -19,6 +19,9 @@ COPY digitransit-component ./digitransit-component
 COPY digitransit-store ./digitransit-store
 
 RUN \
+  # Tell Playwright not to download browser binaries, as it is only used for testing (not building).
+  # https://github.com/microsoft/playwright/blob/v1.16.2/installation-tests/installation-tests.sh#L200-L216
+  export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
   && yarn install --immutable --inline-builds \
   && rm -rf /tmp/phantomjs
 
