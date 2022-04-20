@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1.4
-FROM node:10 as node-modules
+FROM node:10-alpine as node-modules
 
 WORKDIR /opt/digitransit-ui
 
@@ -28,7 +28,7 @@ RUN \
 # We create another image layer *without* the dir here, in order to copy the Yarn setup without the cache later.
 RUN rm -r .yarn/cache
 
-FROM node:10
+FROM node:10-alpine
 MAINTAINER Reittiopas version: 0.1
 
 WORKDIR /opt/digitransit-ui
