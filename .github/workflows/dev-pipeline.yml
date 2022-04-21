@@ -35,7 +35,8 @@ jobs:
           key: yarn-cache-${{ github.ref_name }}
           restore-keys: yarn-cache-v2
       - name: Install dependencies
-        run: yarn
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        run: yarn install --immutable
   lint:
     needs: install
     runs-on: ubuntu-18.04
@@ -68,8 +69,12 @@ jobs:
           path: '.yarn/cache'
           key: yarn-cache-${{ github.ref_name }}
           restore-keys: yarn-cache-v2
-      - name: Install dependencies and build shared components
-        run: yarn setup
+      - name: Install dependencies
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        run: yarn install --immutable
+
+      - name: Build shared components
+        run: yarn run build-workspaces
       - name: Run linters
         run: yarn lint
   unit-test:
@@ -104,8 +109,12 @@ jobs:
           path: '.yarn/cache'
           key: yarn-cache-${{ github.ref_name }}
           restore-keys: yarn-cache-v2
-      - name: Install dependencies and build shared components
-        run: yarn setup
+      - name: Install dependencies
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        run: yarn install --immutable
+
+      - name: Build shared components
+        run: yarn run build-workspaces
       - name: build relay queries
         run: yarn relay
       - name: Run unit tests
@@ -144,8 +153,13 @@ jobs:
           path: '.yarn/cache'
           key: yarn-cache-${{ github.ref_name }}
           restore-keys: yarn-cache-v2
-      - name: Install dependencies and build shared components
-        run: yarn setup
+      - name: Install dependencies
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        run: yarn install --immutable
+
+      - name: Build shared components
+        run: yarn run build-workspaces
+
       - name: build relay queries
         run: yarn relay
       - name: Run accessibility tests
@@ -182,8 +196,12 @@ jobs:
   #         path: '.yarn/cache'
   #         key: yarn-cache-${{ github.ref_name }}
   #         restore-keys: yarn-cache-v2
+  #     - name: Install dependencies
+  #       if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+  #       run: yarn install --immutable
+
   #     - name: Build shared components
-  #       run: yarn setup
+  #       run: yarn run build-workspaces
   #     - name: Build UI
   #       run: yarn build
   #     - name: Cache build
@@ -229,8 +247,12 @@ jobs:
           path: '.yarn/cache'
           key: yarn-cache-${{ github.ref_name }}
           restore-keys: yarn-cache-v2
+      - name: Install dependencies
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        run: yarn install --immutable
+
       - name: Build shared components
-        run: yarn setup
+        run: yarn run build-workspaces
       - name: Build relay queries
         run: yarn relay
       - name: Build UI
@@ -279,8 +301,12 @@ jobs:
           path: '.yarn/cache'
           key: yarn-cache-${{ github.ref_name }}
           restore-keys: yarn-cache-v2
-      - name: Install dependencies and build shared components
-        run: yarn setup
+      - name: Install dependencies
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        run: yarn install --immutable
+
+      - name: Build shared components
+        run: yarn run build-workspaces
       - name: Build relay queries
         run: yarn relay
       - name: Build UI
@@ -332,8 +358,12 @@ jobs:
           path: '.yarn/cache'
           key: yarn-cache-${{ github.ref_name }}
           restore-keys: yarn-cache-v2
-      - name: Install dependencies and build shared components
-        run: yarn setup
+      - name: Install dependencies
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        run: yarn install --immutable
+
+      - name: Build shared components
+        run: yarn run build-workspaces
       - name: build relay queries
         run: yarn relay
       - name: Authenticate with registry
