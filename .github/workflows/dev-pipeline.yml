@@ -96,8 +96,60 @@ jobs:
 
       - name: Run linters
         run: yarn lint
-  unit-test:
+
+  build:
     needs: install
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        node-version: [10.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: "Set time zone to Europe/Helsinki"
+        uses: zcong1993/setup-timezone@master
+        with:
+          timezone: "Europe/Helsinki"
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      # https://github.com/actions/cache/blob/8f1e2e02865c42348f9baddbbaafb1841dce610a/examples.md#node---yarn-2
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Cache .yarn/cache
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        uses: actions/cache@v3
+        with:
+          path: '.yarn/cache'
+          key: yarn-cache-${{ github.ref_name }}
+          restore-keys: yarn-cache-v2
+      - name: Install dependencies
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        run: yarn --immutable
+
+      - name: cache shared components
+        id: cache-shared-components
+        uses: actions/cache@v2
+        with:
+          path: 'digitransit-*'
+          key: ${{ runner.os }}-modules-${{ hashFiles('digitransit-*') }}
+      - name: build shared components
+        if: ${{ steps.cache-shared-components.outputs.cache-hit != 'true' }}
+        run: yarn run build-workspaces
+
+      - name: Build relay queries
+        run: yarn relay
+      - name: Build UI
+        run: yarn build
+
+  unit-test:
+    needs: build
     runs-on: ubuntu-18.04
     strategy:
       matrix:
@@ -142,14 +194,28 @@ jobs:
         if: ${{ steps.cache-shared-components.outputs.cache-hit != 'true' }}
         run: yarn run build-workspaces
 
-      - name: build relay queries
-        run: yarn relay
+      - name: cache built Relay queries & UI
+        id: cache-ui-build
+        uses: actions/cache@v3
+        with:
+          path: |
+            '_static'
+            'manifest.json'
+            'stats.json'
+            '__generated__'
+            '**/__generated__'
+          key: relay-ui-${{ github.sha }}
+      - name: build Relay queries & UI
+        if: ${{ steps.cache-ui-build.outputs.cache-hit != 'true' }}
+        run: |
+          yarn build
+
       - name: Run unit tests
         run: yarn run test-coverage
       - name: Send test coverage report
         run: yarn run test-report
   accessibility-test:
-    needs: install
+    needs: build
     runs-on: ubuntu-18.04
     strategy:
       matrix:
@@ -198,64 +264,9 @@ jobs:
         run: yarn relay
       - name: Run accessibility tests
         run: yarn test-accessibility
-  # build:
-  #   needs: install
-  #   runs-on: ubuntu-18.04
-  #   strategy:
-  #     matrix:
-  #       node-version: [10.x]
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-  #     - name: "Set time zone to Europe/Helsinki"
-  #       uses: zcong1993/setup-timezone@master
-  #       with:
-  #         timezone: "Europe/Helsinki"
-  #     - name: Use Node.js ${{ matrix.node-version }}
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: ${{ matrix.node-version }}
 
-  #     # https://github.com/actions/cache/blob/8f1e2e02865c42348f9baddbbaafb1841dce610a/examples.md#node---yarn-2
-  #     - name: Cache node_modules
-  #       id: cache-node-modules
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: '**/node_modules'
-  #         key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-  #     - name: Cache .yarn/cache
-  #       if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
-  #       uses: actions/cache@v3
-  #       with:
-  #         path: '.yarn/cache'
-  #         key: yarn-cache-${{ github.ref_name }}
-  #         restore-keys: yarn-cache-v2
-  #     - name: Install dependencies
-  #       if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
-  #       run: yarn install --immutable
-
-  #     - name: cache shared components
-  #       id: cache-shared-components
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: 'digitransit-*'
-  #         key: ${{ runner.os }}-modules-${{ hashFiles('digitransit-*') }}
-  #     - name: Build shared components
-  #       if: ${{ steps.cache-shared-components.outputs.cache-hit != 'true' }}
-  #       run: yarn run build-workspaces
-
-  #     - name: Build UI
-  #       run: yarn build
-  #     - name: Cache build
-  #       id: cache-build
-  #       uses: actions/cache@v3
-  #       with:
-  #         path: |
-  #           '**/_static'
-  #           './manifest.json'
-  #         key: ${{ runner.os }}-build-${{ github.run_id }}
   e2e-test-desktop:
-    needs: install
+    needs: build
     runs-on: ubuntu-18.04
     strategy:
       # don't cancel running jobs even if one fails
@@ -317,7 +328,7 @@ jobs:
           STORAGERESOURCENAME: "visualtestsnapshots"
         run: yarn test:e2e
   e2e-test-mobile:
-    needs: install
+    needs: build
     runs-on: ubuntu-18.04
     strategy:
       # don't cancel running jobs even if one fails
@@ -382,7 +393,7 @@ jobs:
   publish-npm:
     if: github.ref == 'refs/heads/v2'
     needs:
-      - install
+      - build
       - lint
       - unit-test
       - accessibility-test
