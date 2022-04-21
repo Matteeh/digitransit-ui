@@ -13,6 +13,7 @@ env:
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
 jobs:
+  # install dependencies, build shared components, cache both for subsequent jobs
   install:
     runs-on: ubuntu-18.04
     strategy:
@@ -112,10 +113,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: "Set time zone to Europe/Helsinki"
-        uses: zcong1993/setup-timezone@master
-        with:
-          timezone: "Europe/Helsinki"
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
@@ -356,6 +353,7 @@ jobs:
           STORAGESASTOKEN: ${{ secrets.STORAGESASTOKEN }}
           STORAGERESOURCENAME: "visualtestsnapshots"
         run: yarn test:e2e
+
   e2e-test-mobile:
     needs: build
     runs-on: ubuntu-18.04
@@ -431,6 +429,7 @@ jobs:
           STORAGESASTOKEN: ${{ secrets.STORAGESASTOKEN }}
           STORAGERESOURCENAME: "visualtestsnapshots"
         run: yarn test:e2e
+
   publish-npm:
     if: github.ref == 'refs/heads/v2'
     needs:
@@ -439,6 +438,7 @@ jobs:
       - unit-test
       - accessibility-test
       - e2e-test-desktop
+      - e2e-test-mobile
     runs-on: ubuntu-18.04
     strategy:
       matrix:
