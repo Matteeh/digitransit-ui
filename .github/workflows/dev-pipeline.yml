@@ -3,9 +3,11 @@ on:
   push:
     branches:
       - v2
-  pull_request:
-    branches:
-      - v2
+      # todo: remove
+      - improve-ci-speed
+  # pull_request:
+  #   branches:
+  #     - v2
 
 env:
   # We tell Playwright not to download browser binaries because we use microsoft/playwright-github-action.
@@ -151,11 +153,11 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            '_static'
-            'manifest.json'
-            'stats.json'
-            '__generated__'
-            '**/__generated__'
+            ./_static
+            ./manifest.json
+            ./stats.json
+            ./__generated__
+            **/__generated__
           key: relay-ui-${{ github.sha }}
       - name: build Relay queries & UI
         if: ${{ steps.cache-ui-build.outputs.cache-hit != 'true' }}
@@ -213,11 +215,11 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            '_static'
-            'manifest.json'
-            'stats.json'
-            '__generated__'
-            '**/__generated__'
+            ./_static
+            ./manifest.json
+            ./stats.json
+            ./__generated__
+            **/__generated__
           key: relay-ui-${{ github.sha }}
       - name: build Relay queries & UI
         if: ${{ steps.cache-ui-build.outputs.cache-hit != 'true' }}
@@ -333,18 +335,25 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            '_static'
-            'manifest.json'
-            'stats.json'
-            '__generated__'
-            '**/__generated__'
+            ./_static
+            ./manifest.json
+            ./stats.json
+            ./__generated__
+            **/__generated__
           key: relay-ui-${{ github.sha }}
       - name: build Relay queries & UI
         if: ${{ steps.cache-ui-build.outputs.cache-hit != 'true' }}
         run: |
           yarn build
 
-      - uses: microsoft/playwright-github-action@v1.5.0
+      # - uses: microsoft/playwright-github-action@v1.5.1
+      - name: let Playwright install dependencies & browsers for testing
+        run: |
+          set -x
+          export PATH="$PWD/node_modules/.bin:$PATH"
+          playwright install-deps
+          playwright install
+
       - name: Run End to End tests
         id: 'test_e2e'
         env:
@@ -408,18 +417,24 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            '_static'
-            'manifest.json'
-            'stats.json'
-            '__generated__'
-            '**/__generated__'
+            ./_static
+            ./manifest.json
+            ./stats.json
+            ./__generated__
+            **/__generated__
           key: relay-ui-${{ github.sha }}
       - name: build Relay queries & UI
         if: ${{ steps.cache-ui-build.outputs.cache-hit != 'true' }}
         run: |
           yarn build
 
-      - uses: microsoft/playwright-github-action@v1.5.0
+      # - uses: microsoft/playwright-github-action@v1.5.1
+      - name: let Playwright install browsers for testing
+        run: |
+          set -x
+          export PATH="$PWD/node_modules/.bin:$PATH"
+          playwright install
+
       - name: Run End to End tests
         id: 'test_e2e'
         env:
@@ -431,7 +446,8 @@ jobs:
         run: yarn test:e2e
 
   publish-npm:
-    if: github.ref == 'refs/heads/v2'
+    # todo: re-add this before merging!
+    # if: github.ref == 'refs/heads/v2'
     needs:
       - build
       - lint
@@ -490,24 +506,26 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
       - name: disregard changed yarn.lock
         run: git update-index --assume-unchanged yarn.lock
-      - name: Publish shared components to npm
-        run: echo ::set-output name=publish-logs::$(yarn digitransit-npm-autopublish)
-        shell: bash
-        id: publish
-      - name: Parse publish logs
-        run: echo ::set-output name=published-packages::$(echo "${{ steps.publish.outputs.publish-logs }}" | grep -o -P '(Successfully published:).*')
-        shell: bash
-        id: log-parse
-      - name: Send published packages to slack
-        if:  steps.log-parse.outputs.published-packages != ''
-        run: ./.github/workflows/scripts/slack_message.sh
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          PUBLISHED_PACKAGES: ${{ steps.log-parse.outputs.published-packages }}
-        shell: bash
+      # todo: re-add this before merging!
+      # - name: Publish shared components to npm
+      #   run: echo ::set-output name=publish-logs::$(yarn digitransit-npm-autopublish)
+      #   shell: bash
+      #   id: publish
+      # - name: Parse publish logs
+      #   run: echo ::set-output name=published-packages::$(echo "${{ steps.publish.outputs.publish-logs }}" | grep -o -P '(Successfully published:).*')
+      #   shell: bash
+      #   id: log-parse
+      # - name: Send published packages to slack
+      #   if:  steps.log-parse.outputs.published-packages != ''
+      #   run: ./.github/workflows/scripts/slack_message.sh
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #     PUBLISHED_PACKAGES: ${{ steps.log-parse.outputs.published-packages }}
+      #   shell: bash
 
   docker-push:
-    if: github.ref == 'refs/heads/v2'
+    # todo: re-add this before merging!
+    # if: github.ref == 'refs/heads/v2'
     needs:
       - lint
       - publish-npm
@@ -554,4 +572,5 @@ jobs:
           # https://github.com/moby/buildkit#registry-push-image-and-cache-separately
           cache-from: type=gha
           cache-to: type=gha,mode=max,oci-mediatypes=true,compression=zstd
-          push: true
+          # todo: set to true before merging!
+          push: false
