@@ -25,7 +25,7 @@ RUN \
   && yarn install --immutable --inline-builds \
   && rm -rf /tmp/phantomjs
 
-# We create another image layer *without* the dir here, in order to copy the Yarn setup without the cache later.
+# We create another image layer *without* .yarn/cache here, in order to copy the Yarn setup without the cache later.
 RUN rm -r .yarn/cache
 
 FROM node:10-alpine
